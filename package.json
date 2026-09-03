@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Provider-backed automatic approval review for DeepSeek Harness.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/delef/dsh-plugin-auto-review.git"
+  },
+  "homepage": "https://github.com/delef/dsh-plugin-auto-review#readme",
+  "bugs": {
+    "url": "https://github.com/delef/dsh-plugin-auto-review/issues"
+  },
   "keywords": [
     "deepseek-harness",
     "dsh-plugin",
@@ -50,7 +58,7 @@
     "build": "npm run clean --silent && tsc && tsdown",
     "test": "tsc -p tsconfig.test.json && node --test lib-test/test/*.js",
     "prepare": "npm run clean --silent && tsc && tsdown -c tsdown.prepare.config.ts",
-    "prepublishOnly": "pnpm build && pnpm test"
+    "prepublishOnly": "npm run build && npm test"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",

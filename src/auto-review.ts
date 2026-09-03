@@ -1,7 +1,6 @@
 /** Provider-neutral routing for automatic reviews of native approval requests. */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type {
   PostToolDecision,
   PreToolDecision,
@@ -334,7 +333,7 @@ export class AutoReviewGate {
       // escalation can do so, and that call receives its own correlation id.
       this.consume(exec.agent, exec.callId)
       const retried = await retry({
-        callId: ToolCallId(`${String(exec.callId)}:auto-review-retry`),
+        callId: `${String(exec.callId)}:auto-review-retry` as ToolExecution['callId'],
         name: exec.name,
         arguments: retryArguments,
         signal: exec.signal,

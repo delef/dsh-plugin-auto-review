@@ -53,7 +53,7 @@ test('package metadata and bundles retain standalone Auto Review identity', asyn
     '@deepseek-ai/dsh-client-ui-settings',
     '@deepseek-ai/dsh-client-locale',
   ]) assert.ok(pkg.dsh.client.inject.includes(service), service)
-  assert.match(pkg.scripts.prepublishOnly ?? '', /pnpm build/)
+  assert.match(pkg.scripts.prepublishOnly ?? '', /npm run build/)
   const bundle = await readFile(join(root, 'lib', 'client.js'), 'utf8')
   assert.match(bundle, /dsh-plugin-auto-review/)
   assert.doesNotMatch(bundle, /dsh-plugin-subscriptions|subscriptions-auth/)
@@ -77,4 +77,14 @@ test('prepare emits the declarations exported by the standalone package', async 
   for (const relativePath of ['lib/providers/codex.js', 'lib/providers/grok.js']) {
     await assert.rejects(access(join(root, relativePath)), { code: 'ENOENT' })
   }
+})
+
+test('host bundle does not require the version-specific ToolCallId runtime export', async () => {
+  const root = process.cwd()
+  await execFileAsync('npm', ['run', 'prepare', '--silent'], { cwd: root })
+  const bundle = await readFile(join(root, 'lib', 'index.js'), 'utf8')
+  assert.doesNotMatch(
+    bundle,
+    /import\s*\{[^}]*\bToolCallId\b[^}]*\}\s*from\s*["']@deepseek-ai\/dsh-llm["']/s,
+  )
 })
