@@ -1,0 +1,39 @@
+name: Publish GitHub Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published npmjs version to mirror
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: '@delef'
+      - name: Download the verified npmjs package
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid package version: $PACKAGE_VERSION" >&2
+            exit 1
+          fi
+          npm pack "dsh-plugin-auto-review@$PACKAGE_VERSION" --pack-destination "$RUNNER_TEMP"
+          tar -xzf "$RUNNER_TEMP/dsh-plugin-auto-review-$PACKAGE_VERSION.tgz" -C "$RUNNER_TEMP"
+          node scripts/prepare-github-package.mjs "$RUNNER_TEMP/package"
+      - name: Publish the linked scoped mirror
+        run: npm publish "$RUNNER_TEMP/package" --registry=https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
