@@ -16,18 +16,22 @@ import {
   type AutoReviewPromptAssemblyLike,
   type AutoReviewPromptContextLike,
 } from './auto-review-state.js'
-import { CodexGuardianReviewer, type GuardianConfig } from './providers/codex.js'
+import { CodexGuardianReviewer, type GuardianConfig } from './providers/codex/index.js'
+import { GrokReviewer, type GrokConfig } from './providers/grok/index.js'
 import { registerAutoReviewRpc } from './rpc.js'
 
-export type { GuardianConfig } from './providers/codex.js'
+export type { GuardianConfig } from './providers/codex/index.js'
+export type { GrokConfig } from './providers/grok/index.js'
 
 export const name = 'auto-review'
 export const inject = ['llm']
 
-/** Raw plugin configuration; routes all use the Codex Guardian policy. */
+/** A provider-specific route selected by its explicit policy discriminator. */
+export type ReviewerConfig = (GuardianConfig & { policy?: 'codex' }) | (GrokConfig & { policy: 'grok' })
+
 export interface Config {
   autoReview?: 'none' | string
-  reviewers?: GuardianConfig[]
+  reviewers?: ReviewerConfig[]
 }
 
 /** Default route shipped by the standalone plugin. */
@@ -39,20 +43,30 @@ export const DEFAULT_REVIEWER: GuardianConfig = {
   reasoningEffort: 'low',
 }
 
+/** Default Grok route; availability is checked dynamically by the router. */
+export const DEFAULT_GROK_REVIEWER: GrokConfig = {
+  reviewerId: 'grok',
+  label: 'Grok',
+  policy: 'grok',
+  provider: 'grok',
+  model: 'grok-4-fast-reasoning',
+}
+
 const nonBlankString = (): z<string> => z.string().pattern(/\S+/).required()
 
-const reviewerSchema: z<GuardianConfig> = z.object({
+const reviewerSchema: z<ReviewerConfig> = z.object({
   reviewerId: nonBlankString(),
   label: nonBlankString(),
   provider: nonBlankString(),
   model: nonBlankString(),
   reasoningEffort: z.string().pattern(/\S+/),
+  policy: z.union(['codex', 'grok']),
 })
 
 /** Config schema with a usable Codex route when no route list is supplied. */
 export const Config: z<Config> = z.object({
   autoReview: z.string().default('none'),
-  reviewers: z.array(reviewerSchema).default([DEFAULT_REVIEWER]),
+  reviewers: z.array(reviewerSchema).default([DEFAULT_REVIEWER, DEFAULT_GROK_REVIEWER]),
 })
 
 function parentSessionOf(context: Context, sessionId: string): string | undefined {
@@ -77,8 +91,10 @@ function warnFor(context: Context): (message: string) => void {
 /** Compose reviewer routing, state/persistence, optional Tools, and RPC. */
 export function apply(context: Context, config: Config): void {
   const normalizedConfig = Config(config)
-  const routeConfig = normalizedConfig.reviewers ?? [DEFAULT_REVIEWER]
-  const reviewers = routeConfig.map(route => new CodexGuardianReviewer(context, route))
+  const routeConfig = normalizedConfig.reviewers ?? [DEFAULT_REVIEWER, DEFAULT_GROK_REVIEWER]
+  const reviewers = routeConfig.map(route => route.policy === 'grok'
+    ? new GrokReviewer(context, route)
+    : new CodexGuardianReviewer(context, route))
   let state!: AutoReviewStateStore
   const router = new ApprovalReviewRouter(reviewers, agent => state.reviewerFor(String(agent.id)))
   const defaults = new AutoReviewDefaultStore(

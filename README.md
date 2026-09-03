@@ -9,29 +9,52 @@ transport.
 
 ## Configuration
 
-The default route is Codex Guardian-compatible and is enabled only when the
-`codex` provider exposes the exact `codex-auto-review` model:
+The default configuration registers Codex Guardian and Grok escalation
+policies. Each route appears only when its provider exposes the exact model:
 
 ```yaml
 autoReview: codex
+reviewers:
+  - policy: codex
+    reviewerId: codex
+    label: Codex
+    provider: codex
+    model: codex-auto-review
+    reasoningEffort: low
+  - policy: grok
+    reviewerId: grok
+    label: Grok
+    provider: grok
+    model: grok-4-fast-reasoning
+```
+
+`policy` selects the provider-specific review logic; `provider` and `model`
+select the generic DSH LLM route used to run it. Existing entries without a
+`policy` keep Codex Guardian behavior. An API-backed route has the same shape:
+
+```yaml
+reviewers:
+  - policy: codex
+    reviewerId: api-guardian
+    label: Company API Guardian
+    provider: openai-api
+    model: gpt-5
+  - policy: grok
+    reviewerId: api-grok-review
+    label: Company Grok Review
+    provider: xai-api
+    model: grok-4-fast-reasoning
+```
+
+For example, the legacy Codex-only form remains valid:
+
+```yaml
 reviewers:
   - reviewerId: codex
     label: Codex
     provider: codex
     model: codex-auto-review
     reasoningEffort: low
-```
-
-An API-backed route has the same shape and policy. The provider name and model
-must be registered by another DSH LLM adapter:
-
-```yaml
-autoReview: api-guardian
-reviewers:
-  - reviewerId: api-guardian
-    label: Company API Guardian
-    provider: openai-api
-    model: gpt-5
 ```
 
 `reviewerId` values are unique configuration identities. `none` selects native
@@ -63,11 +86,12 @@ query or subscriptions-side compatibility API is required.
 
 ## Scope and compatibility
 
-Version 1 publishes the common reviewer/router/state/RPC architecture plus the
-Codex Guardian policy as the first provider implementation. Grok is not
-claimed or bundled by this release; adding another provider means implementing
-its own policy and registering a route, not adding provider branches to the
-shared gate or UI.
+Version 1 publishes the common reviewer/router/state/RPC architecture with two
+provider-specific implementations: Codex Guardian and Grok escalation review.
+Their policy, parsing, transcript, and reviewer logic live independently under
+`src/providers/codex/` and `src/providers/grok/`. Adding another provider means
+implementing its directory and registering a route, not adding branches to the
+shared gate, RPC, or UI.
 
 The package targets the DSH `0.1.2-alpha.3` service contracts and browser
 client slots. It is compatible with subscription-backed and API-backed LLM

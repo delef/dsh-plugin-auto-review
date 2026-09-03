@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { Context } from '@deepseek-ai/cordis'
-import { apply, Config, DEFAULT_REVIEWER, type GuardianConfig } from '../src/index.js'
+import { apply, Config, DEFAULT_GROK_REVIEWER, DEFAULT_REVIEWER, type GuardianConfig } from '../src/index.js'
 import { ApprovalReviewRouter } from '../src/auto-review.js'
 import { type ConnectionRpcHandler } from '@deepseek-ai/dsh-client-connection'
 
@@ -26,6 +26,17 @@ test('config accepts Codex Guardian route arrays and router rejects duplicate id
     { reviewerId: 'codex', reviewerLabel: 'Codex', reviewApproval: async () => undefined },
     { reviewerId: 'codex', reviewerLabel: 'Codex again', reviewApproval: async () => undefined },
   ], () => undefined), /duplicate approval reviewer: codex/)
+})
+
+test('default config registers Codex and Grok policy routes while legacy routes stay Codex', () => {
+  const defaults = Config({}).reviewers ?? []
+  assert.deepEqual(defaults.map(route => [route.reviewerId, route.policy]), [
+    ['codex', undefined],
+    ['grok', 'grok'],
+  ])
+  assert.equal(DEFAULT_GROK_REVIEWER.model, 'grok-4-fast-reasoning')
+  const legacy = Config({ reviewers: [DEFAULT_REVIEWER] }).reviewers?.[0]
+  assert.equal(legacy?.policy, undefined)
 })
 
 test('config rejects empty or whitespace-only reviewer route fields with exact errors', () => {

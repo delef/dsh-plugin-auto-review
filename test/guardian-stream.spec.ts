@@ -6,7 +6,7 @@ import {
   ToolCallId,
 } from '@deepseek-ai/dsh-llm'
 import { ApprovalReviewRouter, type ApprovalReviewRequest, type ApprovalReviewSessionEvent } from '../src/auto-review.js'
-import { CODEX_GUARDIAN_POLICY, CodexGuardianReviewer, parseCodexApprovalReview } from '../src/providers/codex.js'
+import { CODEX_GUARDIAN_POLICY, CodexGuardianReviewer, parseCodexApprovalReview } from '../src/providers/codex/index.js'
 
 function agent(
   id = 'agent-1',

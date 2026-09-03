@@ -7,12 +7,26 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
-test('keeps provider-specific Codex code under src/providers', async () => {
+test('keeps provider-specific code under nested provider directories', async () => {
   const root = process.cwd()
-  for (const relativePath of ['src/providers/codex.ts', 'src/providers/codex-guardian-policy.ts']) {
+  for (const relativePath of [
+    'src/providers/codex/index.ts',
+    'src/providers/codex/policy.ts',
+    'src/providers/codex/prompt.ts',
+    'src/providers/codex/reviewer.ts',
+    'src/providers/grok/index.ts',
+    'src/providers/grok/policy.ts',
+    'src/providers/grok/prompt.ts',
+    'src/providers/grok/reviewer.ts',
+  ]) {
     await access(join(root, relativePath))
   }
-  for (const relativePath of ['src/codex-guardian.ts', 'src/codex-guardian-policy.ts']) {
+  for (const relativePath of [
+    'src/providers/codex.ts',
+    'src/providers/codex-guardian-policy.ts',
+    'src/providers/grok.ts',
+    'src/providers/grok-auto-policy.ts',
+  ]) {
     await assert.rejects(access(join(root, relativePath)), { code: 'ENOENT' })
   }
 })
@@ -60,4 +74,7 @@ test('prepare emits the declarations exported by the standalone package', async 
     assert.ok(content.trim().length > 0, declaration)
   }
   await assert.rejects(access(staleRootProvider), { code: 'ENOENT' })
+  for (const relativePath of ['lib/providers/codex.js', 'lib/providers/grok.js']) {
+    await assert.rejects(access(join(root, relativePath)), { code: 'ENOENT' })
+  }
 })
