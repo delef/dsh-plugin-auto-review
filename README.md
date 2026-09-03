@@ -1,8 +1,9 @@
 # Auto Review
 
-`dsh-plugin-auto-review` lets DeepSeek Harness use a model to answer native
-tool approval requests. It supplies the review policy and approval integration,
-but does not bundle models, accounts, or credentials.
+`dsh-plugin-auto-review` reproduces provider-specific approval-review behavior
+inside DeepSeek Harness. Each policy implements the review logic of a supported
+provider—for the first release, Codex Guardian and Grok escalation—while the
+model itself can be supplied through any compatible DSH LLM adapter.
 
 The underlying Codex or Grok model comes from a DSH LLM adapter. A provider
 plugin such as `dsh-plugin-subscriptions` can expose `codex/codex-auto-review`
