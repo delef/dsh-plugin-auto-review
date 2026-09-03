@@ -10,6 +10,30 @@ or `grok/grok-4-fast-reasoning`; an API adapter can expose a compatible route
 instead. The adapter owns authentication and transport, while Auto Review calls
 its registered route through `ctx.llm.stream()`.
 
+## Install
+
+The package is published on [npm](https://www.npmjs.com/package/dsh-plugin-auto-review)
+as `dsh-plugin-auto-review`. Install it into each DSH profile where automatic
+review should be available:
+
+```sh
+dsh plugin --profile web add dsh-plugin-auto-review
+dsh plugin --profile headless add dsh-plugin-auto-review
+```
+
+Restart the corresponding DSH process after installation so the profile loads
+the plugin. To update an npm installation later:
+
+```sh
+dsh plugin --profile web update --latest dsh-plugin-auto-review
+dsh plugin --profile headless update --latest dsh-plugin-auto-review
+```
+
+The same release is also mirrored to
+[GitHub Packages](https://github.com/users/delef/packages/npm/package/dsh-plugin-auto-review)
+as `@delef/dsh-plugin-auto-review`. That distribution requires GitHub Packages
+authentication; npm is the recommended installation source.
+
 ## How it works
 
 ```mermaid
