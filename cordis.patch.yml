@@ -1,0 +1,5 @@
+# Mount the standalone Host half under its stable Cordis id. The browser half
+# is discovered from package.json's dsh.client declaration.
+- insert:
+    - id: auto-review
+      name: dsh-plugin-auto-review
