@@ -1,11 +1,21 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { execFile } from 'node:child_process'
-import { readFile } from 'node:fs/promises'
+import { access, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
+
+test('keeps provider-specific Codex code under src/providers', async () => {
+  const root = process.cwd()
+  for (const relativePath of ['src/providers/codex.ts', 'src/providers/codex-guardian-policy.ts']) {
+    await access(join(root, relativePath))
+  }
+  for (const relativePath of ['src/codex-guardian.ts', 'src/codex-guardian-policy.ts']) {
+    await assert.rejects(access(join(root, relativePath)), { code: 'ENOENT' })
+  }
+})
 
 test('package metadata and bundles retain standalone Auto Review identity', async () => {
   const root = process.cwd()
@@ -42,10 +52,12 @@ test('prepare emits the declarations exported by the standalone package', async 
   const root = process.cwd()
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8')) as { scripts: Record<string, string> }
   assert.match(pkg.scripts.prepare ?? '', /tsc/)
-  await execFileAsync(join(root, 'node_modules', '.bin', 'tsc'), [], { cwd: root })
-  await execFileAsync(join(root, 'node_modules', '.bin', 'tsdown'), ['-c', 'tsdown.prepare.config.ts'], { cwd: root })
+  const staleRootProvider = join(root, 'lib', 'codex-guardian.js')
+  await writeFile(staleRootProvider, '// stale provider output\n')
+  await execFileAsync('npm', ['run', 'prepare', '--silent'], { cwd: root })
   for (const declaration of ['lib/index.d.ts', 'lib/client/index.d.ts']) {
     const content = await readFile(join(root, declaration), 'utf8')
     assert.ok(content.trim().length > 0, declaration)
   }
+  await assert.rejects(access(staleRootProvider), { code: 'ENOENT' })
 })

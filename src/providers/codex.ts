@@ -12,7 +12,7 @@ import type {
   ApprovalReviewDecision,
   ApprovalReviewRequest,
   ApprovalReviewer,
-} from './auto-review.js'
+} from '../auto-review.js'
 import { CODEX_GUARDIAN_POLICY } from './codex-guardian-policy.js'
 
 export { CODEX_GUARDIAN_POLICY }

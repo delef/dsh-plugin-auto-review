@@ -16,10 +16,10 @@ import {
   type AutoReviewPromptAssemblyLike,
   type AutoReviewPromptContextLike,
 } from './auto-review-state.js'
-import { CodexGuardianReviewer, type GuardianConfig } from './codex-guardian.js'
+import { CodexGuardianReviewer, type GuardianConfig } from './providers/codex.js'
 import { registerAutoReviewRpc } from './rpc.js'
 
-export type { GuardianConfig } from './codex-guardian.js'
+export type { GuardianConfig } from './providers/codex.js'
 
 export const name = 'auto-review'
 export const inject = ['llm']
