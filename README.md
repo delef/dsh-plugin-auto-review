@@ -17,7 +17,7 @@ flowchart LR
     A[Tool call] --> B[Native DSH approval/request]
     B --> C{Auto Review}
     C -->|none| D[Manual DSH approval]
-    C -->|Codex or Grok| E[Provider-specific review policy]
+    C -->|Configured reviewer| E[Provider-specific review policy]
     F[dsh-plugin-subscriptions or API adapter] -->|provider + model route| G[DSH ctx.llm]
     E --> G
     G --> H{Review result}
