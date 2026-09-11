@@ -119,10 +119,50 @@ plugin context from user authorization anchors.
 
 ## Compatibility and development
 
-The package targets the DSH `0.1.2-alpha.3` service contracts and browser client
-slots. From a checkout with the matching toolchain:
+Requires Node.js `>=22.13.0`. The declared DSH target is `0.1.2-alpha.3`,
+matching the pinned development service contracts and browser client slots.
+Other DSH releases have not been validated; no exact-release runtime acceptance
+is claimed by this range declaration.
+
+Git installs use the committed `lib/` output and run no `preinstall`, `install`,
+`postinstall`, or `prepare` scripts. Maintainers build before committing source
+changes. `prepublishOnly` builds and tests only when publishing to npm.
+The lockfile pins the development toolchain; legacy peer resolution prevents npm
+from mixing newer transitive DSH peers into the pinned alpha service contracts.
+From a checkout:
 
 ```sh
+npm ci --ignore-scripts --legacy-peer-deps
 npm run build
 npm test
+git diff --exit-code -- lib
 ```
+
+## Permissions and external services
+
+This is an approval-policy plugin with elevated capabilities, not a low-risk
+utility. DSH STORE may require `user-reviewed` status or keep installation blocked.
+
+- **Files:** reads and writes the reviewer selection under the DSH home at
+  `plugins/auto-review/auto-review.json`, using a temporary file and atomic rename.
+  Session selections remain in memory. It does not read credential stores.
+- **Model traffic:** sends bounded conversation context and the proposed tool
+  action through the configured DSH LLM route. That context can contain private
+  project data or credentials already present in the conversation/tool arguments.
+  The selected adapter owns authentication, endpoints, network transport, and billing;
+  Auto Review itself has no API key configuration or direct HTTP client.
+- **Approval and commands:** handles native approval requests and can request a
+  retry of the same Bash call with the next sandbox mode. DSH executes the tool
+  through its approval boundary; this plugin does not spawn a shell itself.
+- **Dependencies:** official DSH services are peer dependencies supplied by the
+  host, including LLM, Tools, User Approval, Home Paths, and Web client services.
+  A separately configured LLM adapter is required for machine review. No adapter
+  or credentials are installed by this package.
+- **Failure bounds:** machine review rejects denied, unavailable, interrupted,
+  timed-out, or malformed results. `none` retains manual approval. A model decision
+  is not a security guarantee; review sensitive actions and provider data handling
+  before enabling automatic approval.
+
+MIT licensing applies to the source and shipped package; `LICENSE` is included
+in the distribution. Packaging and validation evidence is in
+[docs/distribution-validation.md](docs/distribution-validation.md).

@@ -42,7 +42,7 @@ test('package metadata and bundles retain standalone Auto Review identity', asyn
     scripts: Record<string, string>
   }
   assert.equal(pkg.name, 'dsh-plugin-auto-review')
-  assert.equal(pkg.version, '0.1.0')
+  assert.equal(pkg.version, '0.1.1')
   assert.equal(pkg.dependencies?.undici, undefined)
   assert.ok(pkg.peerDependencies?.['@deepseek-ai/dsh-api-remotes'])
   assert.ok(pkg.dsh.client.inject.includes('@deepseek-ai/dsh-api-remotes'))
@@ -62,13 +62,14 @@ test('package metadata and bundles retain standalone Auto Review identity', asyn
   assert.match(patch, /name: dsh-plugin-auto-review/)
 })
 
-test('prepare emits the declarations exported by the standalone package', async () => {
+test('build emits the declarations exported by the standalone package', async () => {
   const root = process.cwd()
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8')) as { scripts: Record<string, string> }
-  assert.match(pkg.scripts.prepare ?? '', /tsc/)
+  for (const hook of ['preinstall', 'install', 'postinstall', 'prepare']) assert.equal(pkg.scripts[hook], undefined)
+  assert.match(pkg.scripts.build ?? '', /tsc/)
   const staleRootProvider = join(root, 'lib', 'codex-guardian.js')
   await writeFile(staleRootProvider, '// stale provider output\n')
-  await execFileAsync('npm', ['run', 'prepare', '--silent'], { cwd: root })
+  await execFileAsync('npm', ['run', 'build', '--silent'], { cwd: root })
   for (const declaration of ['lib/index.d.ts', 'lib/client/index.d.ts']) {
     const content = await readFile(join(root, declaration), 'utf8')
     assert.ok(content.trim().length > 0, declaration)
@@ -81,7 +82,7 @@ test('prepare emits the declarations exported by the standalone package', async 
 
 test('host bundle does not require the version-specific ToolCallId runtime export', async () => {
   const root = process.cwd()
-  await execFileAsync('npm', ['run', 'prepare', '--silent'], { cwd: root })
+  await execFileAsync('npm', ['run', 'build', '--silent'], { cwd: root })
   const bundle = await readFile(join(root, 'lib', 'index.js'), 'utf8')
   assert.doesNotMatch(
     bundle,

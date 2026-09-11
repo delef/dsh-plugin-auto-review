@@ -1,4 +1,4 @@
-/** Self-contained prepare build for git installs without the monorepo compiler. */
+/** Self-contained release build, committed so Git installs need no compiler. */
 import { defineConfig } from 'tsdown'
 import clientConfig from './tsdown.config.js'
 

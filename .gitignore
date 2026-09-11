@@ -145,5 +145,4 @@ vite.config.ts.timestamp-*
 # Project build and partial dependency artifacts
 node_modules
 node_modules.pnpm-partial
-lib
 lib-test
