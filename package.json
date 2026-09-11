@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-auto-review",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Provider-backed automatic approval review for DeepSeek Harness.",
   "license": "MIT",
   "repository": {
@@ -35,7 +35,9 @@
   "files": [
     "lib",
     "cordis.patch.yml",
-    "THIRD_PARTY_LICENSES"
+    "LICENSE",
+    "README.md",
+    "docs/distribution-validation.md"
   ],
   "dsh": {
     "bundle": {
@@ -52,13 +54,15 @@
         "@deepseek-ai/dsh-client-ui-slots",
         "@deepseek-ai/dsh-client-locale"
       ]
+    },
+    "compatibility": {
+      "dsh": "0.1.2-alpha.3"
     }
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('lib', { recursive: true, force: true })\"",
-    "build": "npm run clean --silent && tsc && tsdown",
+    "build": "npm run clean --silent && tsc && tsdown -c tsdown.prepare.config.ts",
     "test": "tsc -p tsconfig.test.json && node --test lib-test/test/*.js",
-    "prepare": "npm run clean --silent && tsc && tsdown -c tsdown.prepare.config.ts",
     "prepublishOnly": "npm run build && npm test"
   },
   "peerDependencies": {
@@ -78,6 +82,7 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.2",
+    "@deepseek-ai/dsh-agent": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-api-remotes": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-client-connection": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-client-locale": "0.1.2-alpha.3",
@@ -87,7 +92,11 @@
     "@deepseek-ai/dsh-client-ui-settings": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-client-ui-slots": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-home-paths": "0.1.2-alpha.3",
+    "@deepseek-ai/dsh-invariants": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-llm": "0.1.2-alpha.3",
+    "@deepseek-ai/dsh-scope": "0.1.2-alpha.3",
+    "@deepseek-ai/dsh-session": "0.1.2-alpha.3",
+    "@deepseek-ai/dsh-system-prompt": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-tools": "0.1.2-alpha.3",
     "@deepseek-ai/dsh-user-approval": "0.1.2-alpha.3",
     "@deepseek-ai/schemastery": "^3.18.2",
@@ -96,5 +105,8 @@
     "react": "^18.2.0",
     "tsdown": "^0.15.12",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   }
 }
